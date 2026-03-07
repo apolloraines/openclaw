@@ -112,22 +112,32 @@ async function validateScriptFileForShellBleed(params: {
   const content = await fs.readFile(absPath, "utf-8");
 
   // Common failure mode: shell env var syntax leaking into Python/JS.
-  // We deliberately match all-caps/underscore vars to avoid false positives with `$` as a JS identifier.
-  const envVarRegex = /\$[A-Z_][A-Z0-9_]{1,}/g;
+  // Match bare vars ($FOO, $foo), braced vars (${FOO}, ${foo}), and
+  // shell command substitution ($(...)).
+  const envVarRegex = /\$\{[A-Za-z_][A-Za-z0-9_]*\}|\$\([^)]+\)|\$[A-Za-z_][A-Za-z0-9_]{1,}/g;
   const first = envVarRegex.exec(content);
   if (first) {
     const idx = first.index;
     const before = content.slice(0, idx);
     const line = before.split("\n").length;
     const token = first[0];
+    // Extract the variable name from $FOO, ${FOO}, or flag $(cmd) patterns.
+    const varName = token.startsWith("${")
+      ? token.slice(2, -1)
+      : token.startsWith("$(")
+        ? null
+        : token.slice(1);
+    const hint = varName
+      ? target.kind === "python"
+        ? `In Python, use os.environ.get(${JSON.stringify(varName)}) instead of raw ${token}.`
+        : `In Node.js, use process.env[${JSON.stringify(varName)}] instead of raw ${token}.`
+      : `Shell command substitution (${token}) detected; use subprocess/child_process instead.`;
     throw new Error(
       [
-        `exec preflight: detected likely shell variable injection (${token}) in ${target.kind} script: ${path.basename(
+        `exec preflight: detected likely shell syntax injection (${token}) in ${target.kind} script: ${path.basename(
           absPath,
         )}:${line}.`,
-        target.kind === "python"
-          ? `In Python, use os.environ.get(${JSON.stringify(token.slice(1))}) instead of raw ${token}.`
-          : `In Node.js, use process.env[${JSON.stringify(token.slice(1))}] instead of raw ${token}.`,
+        hint,
         "(If this is inside a string literal on purpose, escape it or restructure the code.)",
       ].join("\n"),
     );

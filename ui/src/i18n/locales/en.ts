@@ -320,6 +320,7 @@ export const en: TranslationMap = {
       scheduleAtInvalid: "Enter a valid date/time.",
       everyAmountInvalid: "Interval must be greater than 0.",
       cronExprRequired: "Cron expression is required.",
+      cronExprInvalid: "Invalid cron expression format (expected 5 or 6 fields).",
       staggerAmountInvalid: "Stagger must be greater than 0.",
       systemTextRequired: "System text is required.",
       agentMessageRequired: "Agent message is required.",

@@ -329,6 +329,7 @@ export const es: TranslationMap = {
       scheduleAtInvalid: "Ingresa una fecha/hora válida.",
       everyAmountInvalid: "El intervalo debe ser mayor a 0.",
       cronExprRequired: "La expresión Cron es requerida.",
+      cronExprInvalid: "Formato de expresión Cron inválido (se esperan 5 o 6 campos).",
       staggerAmountInvalid: "El escalonamiento debe ser mayor a 0.",
       systemTextRequired: "El texto del sistema es requerido.",
       agentMessageRequired: "El mensaje del agente es requerido.",

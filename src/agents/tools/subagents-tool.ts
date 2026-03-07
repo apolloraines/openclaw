@@ -50,6 +50,7 @@ const MAX_RECENT_MINUTES = 24 * 60;
 const MAX_STEER_MESSAGE_CHARS = 4_000;
 const STEER_RATE_LIMIT_MS = 2_000;
 const STEER_ABORT_SETTLE_TIMEOUT_MS = 5_000;
+const MAX_CASCADE_KILL_DEPTH = 8;
 
 const steerRateLimit = new Map<string, number>();
 
@@ -285,7 +286,12 @@ async function cascadeKillChildren(params: {
   parentChildSessionKey: string;
   cache: Map<string, Record<string, SessionEntry>>;
   seenChildSessionKeys?: Set<string>;
+  depth?: number;
 }): Promise<{ killed: number; labels: string[] }> {
+  const depth = params.depth ?? 0;
+  if (depth >= MAX_CASCADE_KILL_DEPTH) {
+    return { killed: 0, labels: [] };
+  }
   const childRuns = listSubagentRunsForRequester(params.parentChildSessionKey);
   const seenChildSessionKeys = params.seenChildSessionKeys ?? new Set<string>();
   let killed = 0;
@@ -316,6 +322,7 @@ async function cascadeKillChildren(params: {
       parentChildSessionKey: childKey,
       cache: params.cache,
       seenChildSessionKeys,
+      depth: depth + 1,
     });
     killed += cascade.killed;
     labels.push(...cascade.labels);

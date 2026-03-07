@@ -313,6 +313,7 @@ export const zh_CN: TranslationMap = {
       scheduleAtInvalid: "请输入有效的日期/时间。",
       everyAmountInvalid: "间隔必须大于 0。",
       cronExprRequired: "Cron 表达式为必填项。",
+      cronExprInvalid: "Cron 表达式格式无效（应为 5 或 6 个字段）。",
       staggerAmountInvalid: "抖动值必须大于 0。",
       systemTextRequired: "系统文本为必填项。",
       agentMessageRequired: "代理消息为必填项。",

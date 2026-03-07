@@ -116,8 +116,18 @@ export function validateCronForm(form: CronFormState): CronFieldErrors {
       errors.everyAmount = "cron.errors.everyAmountInvalid";
     }
   } else {
-    if (!form.cronExpr.trim()) {
+    const cronExprTrimmed = form.cronExpr.trim();
+    if (!cronExprTrimmed) {
       errors.cronExpr = "cron.errors.cronExprRequired";
+    } else {
+      // Basic cron expression format validation (5 or 6 fields of allowed characters).
+      // Server performs full validation; this catches obvious typos client-side.
+      const cronParts = cronExprTrimmed.split(/\s+/);
+      if (cronParts.length < 5 || cronParts.length > 6) {
+        errors.cronExpr = "cron.errors.cronExprInvalid";
+      } else if (!/^[0-9*,/\-?LW#]+$/.test(cronParts.join(""))) {
+        errors.cronExpr = "cron.errors.cronExprInvalid";
+      }
     }
     if (!form.scheduleExact) {
       const staggerAmount = form.staggerAmount.trim();
